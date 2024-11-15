@@ -1,0 +1,210 @@
+---
+title: "Infraestructura como Código con Terraform"
+author: "Sergio Sánchez"
+format:
+  revealjs:
+    embed-resources: true
+    incremental: true
+    theme: serif
+---
+
+# Introducción a Infraestructura como Código
+
+## ¿Qué es Infraestructura como Código (IaC)?
+- Automatizar la gestión de infraestructura a través de código
+- Beneficios:
+  - **Automatización**: Reduce el esfuerzo manual
+  - **Consistencia**: Evita desviaciones en los entornos
+  - **Escalabilidad**: Maneja eficientemente implementaciones a gran escala
+  - **Control de Versiones**: Rastrea los cambios a lo largo del tiempo
+
+::: {.notes}
+Recuerda explicar por qué IaC es tan importante en proyectos grandes: ayuda a mantener consistencia y eficiencia, especialmente cuando trabajamos con infraestructuras complejas en la nube. 
+Piensa en ejemplos concretos como la infraestructura de una empresa que opera en múltiples regiones.
+Por ejemplo, gestión de infrastructura multi-región en la nube, automatización del entorno de desarrollo y producción, escalado rápido durante eventos especiales.
+El ejemplo que escuché en TalkPython como en Inglaterra las compañías de energía planean picos de uso durante el medio tiempo de partidos de fútbol.
+:::
+
+## Herramientas populares de IaC
+- Terraform
+  - Soporte para múltiples proveedores de nube y módulos reutilizables, lo que permite una gran flexibilidad y consistencia en diferentes entornos.
+- CloudFormation
+- Ansible
+
+::: {.notes}
+Haz una comparación rápida de estas herramientas. ¿Por qué preferimos Terraform aquí? Por su flexibilidad y el soporte para múltiples proveedores.
+:::
+
+# Introducción a Terraform
+
+## ¿Por qué Terraform? {.smaller}
+- Código abierto y ampliamente utilizado[^1]
+- Soporta muchos proveedores de nube (AWS, Azure, GCP)
+- Proporciona módulos reutilizables
+- Ejemplo del mundo real: En un proyecto reciente, usamos Terraform para gestionar la infraestructura en AWS y Azure simultáneamente. Esto permitió a nuestro equipo centralizar la gestión y reutilizar módulos, lo cual ahorró tiempo y redujo errores en comparación con herramientas específicas de un solo proveedor.
+
+[^1]: Hubo un cambio de licencia en agosto del 2023 - es complicado. 
+
+::: {.notes}
+Destaca que Terraform permite manejar múltiples proveedores y reutilizar módulos, lo que lo hace muy poderoso para mantener consistencia y flexibilidad. Menciona algún proyecto personal donde esto haya sido útil.
+:::
+
+## Conceptos Clave
+- **Providers**: Define servicios en la nube
+- **Resources**: Componentes (por ejemplo, VMs, buckets)
+- **State**: Rastrea la infraestructura desplegada
+
+::: {.notes}
+Asegúrate de que los asistentes entiendan bien cómo el archivo de estado es fundamental para que Terraform conozca la infraestructura actual y cómo se mantiene sincronizada. Menciona algún ejemplo de un problema común con el archivo de estado.
+:::
+
+# Configuración de Terraform
+
+## Configuración del Entorno
+- Instalar Terraform usando la [Guía de Instalación de Terraform](https://www.terraform.io/downloads.html)
+- Configurar un proveedor (por ejemplo, AWS)
+
+::: {.notes}
+Guía paso a paso para la instalación y configuración. Asegúrate de que todos estén siguiendo y que sepan dónde buscar ayuda si se encuentran con problemas. Esto puede ser un punto donde los participantes se atascan.
+:::
+
+## Flujo de Trabajo de Terraform
+1. **Escribir**: Crear la configuración en archivos `.tf`
+2. **Planificar**: Previsualizar los cambios antes de aplicarlos
+3. **Aplicar**: Desplegar la infraestructura
+4. **Destruir**: Eliminar recursos
+
+```{mermaid}
+graph LR;
+    A[Escribir] --> B[Planificar];
+    B --> C[Aplicar];
+    C --> D[Desplegar];
+    D --> E[Destruir];
+```
+
+::: {.notes}
+Explica cómo cada paso del flujo de trabajo ayuda a tener un control claro sobre la infraestructura y evita errores costosos.
+:::
+
+
+# Práctica: Construyendo tu Primera Infraestructura
+
+## Paso 1: Crear un Proyecto Simple
+- Definir el **provider** (ejemplo con AWS)
+- Crear un *resource* (por ejemplo, un bucket S3 o una instancia EC2)
+
+::: {.notes}
+Guía a los participantes paso a paso mientras escriben su primer archivo `.tf`. Recuerda ir despacio y asegurarte de que todos comprendan la sintaxis básica antes de avanzar.
+:::
+
+## Paso 2: Demostración
+- Escribir, planificar y aplicar los cambios
+- Explicar la importancia del **archivo de estado** de Terraform
+
+::: {.notes}
+Durante la demostración, muestra cómo el archivo de estado se actualiza y cómo se usa para planificar futuros cambios. Muestra también cómo pueden surgir problemas si el estado se pierde o queda desactualizado.
+:::
+
+## Demo
+
+# Conceptos Clave de Terraform
+
+## Variables y Outputs
+- **Variables**: Hacer el código configurable
+- **Outputs**: Compartir datos entre módulos
+
+::: {.notes}
+Muestra un ejemplo simple de cómo definir variables y outputs. Por ejemplo, crea una variable para la región de AWS y un output para el nombre del bucket S3 que creaste. Esto ayudará a que el concepto sea más claro y aplicable.
+:::
+
+```hcl
+variable "region" {
+  description = "La región de AWS a utilizar"
+  default     = "us-west-1"
+}
+
+resource "aws_s3_bucket" "mi_bucket" {
+  bucket = "mi-primer-bucket-terraform"
+  region = var.region
+}
+
+output "bucket_name" {
+  value = aws_s3_bucket.mi_bucket.bucket
+}
+```
+
+## Gestión del Estado
+- Cómo Terraform rastrea los recursos
+- **Remote State**: Usar S3 o similar para un estado compartido
+
+::: {.notes}
+Explica las ventajas del estado remoto, especialmente en entornos donde varios desarrolladores colaboran. Esto ayuda a evitar conflictos y pérdida de información. Usa ejemplos de cómo puede fallar si no se utiliza adecuadamente.
+:::
+
+## Módulos
+- Código reutilizable para simplificar configuraciones complejas
+
+::: {.notes}
+Habla sobre la importancia de los módulos para evitar la repetición de código y mantener la consistencia. Explica cómo puedes crear un módulo para reutilizar la configuración de un bucket S3 en diferentes proyectos.
+:::
+
+
+# Características Avanzadas de Terraform
+
+## Provisionadores y Dependencias
+- Usar **provisionadores** para la configuración inicial
+  - **Caso de uso**: Los provisionadores son útiles cuando necesitas ejecutar comandos para preparar el entorno después de que los recursos se han creado. Por ejemplo, si estás desplegando una máquina virtual, un provisionador puede instalar automáticamente paquetes de software esenciales, configurar servicios o incluso ejecutar scripts personalizados. En un proyecto reciente, utilizamos un provisionador para instalar Docker en una nueva instancia EC2, asegurándonos de que el entorno estuviera listo para ejecutar contenedores sin intervención manual.
+- Gestionar dependencias usando `depends_on`
+
+::: {.notes}
+Aclara cuándo es adecuado usar provisionadores y cómo gestionar dependencias para asegurar un despliegue ordenado. Menciona un ejemplo donde un provisionador fue útil para instalar software después de crear una instancia.
+
+https://developer.hashicorp.com/terraform/language/resources/provisioners/syntax 
+:::
+
+## Mejores Prácticas
+- **DRY**: Usar módulos para la consistencia
+- **Seguridad del Estado**: Usar backends remotos (por ejemplo, S3)
+- **Control de Versiones**: Mantener todos los archivos `.tf` en control de versiones (por ejemplo, Git)
+
+::: {.notes}
+Resalta la importancia de seguir estas prácticas para mantener la infraestructura segura y fácil de gestionar. Menciona cómo el control de versiones puede salvarte cuando se hacen cambios accidentales.
+:::
+
+
+# Preguntas y Resumen
+
+## Errores Comunes
+- Conflictos en el archivo de estado
+- Desviación de recursos
+
+::: {.notes}
+(idea) pedir a los estudiantes que compartan cualquier problema que hayan tenido y cómo lo resolvieron.
+:::
+
+## Casos de Uso Reales {.smaller}
+- **Automatización de Infraestructura de Almacenamiento**: Utilizar Terraform para crear y gestionar buckets de almacenamiento (como S3) para el almacenamiento de grandes volúmenes de datos. Esto permite automatizar la creación de almacenamiento cuando se necesita realizar un procesamiento masivo de datos.
+- **Implementación de Clústeres de Procesamiento**: Configurar clústeres de procesamiento de datos como EMR en AWS o Dataproc en GCP usando Terraform. Esto facilita el escalado y la recreación de entornos complejos para proyectos de análisis de datos.
+
+## Casos de Uso Reales {.smaller}
+- **Infraestructura para Pipelines de Datos**: Desplegar y gestionar la infraestructura de pipelines de datos, como instancias EC2, bases de datos y servicios de mensajería, que forman parte del flujo ETL (Extract, Transform, Load) para mover y transformar datos entre diferentes sistemas.
+- **Infraestructura para Modelos de Machine Learning**: Usar Terraform para aprovisionar entornos necesarios para entrenar y desplegar modelos de machine learning. Por ejemplo, configurar instancias GPU para entrenar modelos o desplegar servicios como SageMaker en AWS, lo que facilita la gestión de recursos según las necesidades del equipo de datos.
+
+::: {.notes}
+Proporciona ejemplos específicos de cómo Terraform puede ser útil en la ingeniería de datos. Habla de cómo automatizar la infraestructura de análisis puede acelerar el trabajo y reducir errores manuales.
+:::
+
+## Resumen
+- **Terraform** como una herramienta poderosa para IaC
+- Explora más:
+  - Documentación oficial de Terraform: https://developer.hashicorp.com/terraform/docs 
+  - Tutoriales oficiales: https://developer.hashicorp.com/terraform/tutorials
+
+::: {.notes}
+Proporciona recursos adicionales para que los participantes sigan aprendiendo después de la sesión. Menciona tus recursos favoritos o aquellos que te ayudaron cuando comenzaste.
+:::
+
+
+# ¿Preguntas?
+
+
